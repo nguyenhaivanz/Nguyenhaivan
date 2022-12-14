@@ -1,11 +1,9 @@
 package com.example.md4.controller;
 
-import com.example.md4.model.Account;
-import com.example.md4.model.Coach;
-import com.example.md4.model.CoachType;
-import com.example.md4.model.Role;
+import com.example.md4.model.*;
 import com.example.md4.repository.IAccountRepository;
 import com.example.md4.repository.ICoachRepository;
+import com.example.md4.repository.ICoach;
 import com.example.md4.service.account.IAccountService;
 import com.example.md4.service.coach.ICoachService;
 import com.example.md4.service.role.IRoleService;
@@ -50,6 +48,9 @@ public class CoachWebController {
     @Autowired
     private IAccountRepository accountRepository;
 
+    @Autowired
+    ICoach iCoach;
+
     @Value("${upload_file_avatar}")
     private String upload_file_avatar;
 
@@ -85,11 +86,8 @@ public class CoachWebController {
     }
     @GetMapping("/find-coach-by-id/{id}")
     public ResponseEntity<Coach> findById(@PathVariable("id") Long id) {
-        Optional<Coach> coach = iCoachService.findOne(id);
-        if (!coach.isPresent()) {
-            new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(coach.get(), HttpStatus.OK);
+        Coach coach = iCoach.findById(id).get();
+        return new ResponseEntity<>(coach, HttpStatus.OK);
     }
 
     @GetMapping("/find-coach-by-gmail")
@@ -172,16 +170,11 @@ public class CoachWebController {
         return new ResponseEntity<>(editCoach, HttpStatus.OK);
     }
 
-    //Xóa 1 đối tượng theo id
     @DeleteMapping("/delete-coach/{id}")
     public ResponseEntity<Coach> delete(@PathVariable("id") Long id) {
-        Optional<Coach> coach = iCoachService.findOne(id);
-        if (!coach.isPresent()) {
-            new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        accountRepository.deleteAccountByCoach(id);
-        iCoachService.delete(id);
-        return new ResponseEntity<>(coach.get(), HttpStatus.OK);
+        Coach coach = iCoach.findById(id).get();
+        iCoach.delete(coach);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/search-coach")

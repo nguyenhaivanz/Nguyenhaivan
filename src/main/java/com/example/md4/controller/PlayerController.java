@@ -2,8 +2,8 @@ package com.example.md4.controller;
 
 import com.example.md4.model.*;
 import com.example.md4.repository.IAccountRepository;
+import com.example.md4.repository.IPlayer;
 import com.example.md4.repository.IPlayerRepository;
-import com.example.md4.service.account.AccountService;
 import com.example.md4.service.account.IAccountService;
 import com.example.md4.service.player.IPlayerService;
 import com.example.md4.service.role.IRoleService;
@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +44,9 @@ public class PlayerController {
     @Autowired
     private IAccountService accountService;
 
+    @Autowired
+    IPlayerRepository iPlayerRepository;
+
     @Value("${upload_file_avatar}")
     private String upload_file_avatar;
 
@@ -50,6 +55,9 @@ public class PlayerController {
 
     @Autowired
     private IPlayerService playerService;
+
+    @Autowired
+    private IPlayer iPlayer;
 
     @Autowired
     private IPlayerRepository playerRepository;
@@ -186,13 +194,9 @@ public class PlayerController {
 
     @DeleteMapping("/delete-player/{id}")
     public ResponseEntity<Player> deletePlayer(@PathVariable("id") Long id) {
-        Optional<Player> player = playerService.findById(id);
-        if (!player.isPresent()) {
-            new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        accountRepository.deleteAccountByPlayer(id);
-        playerService.remove(id);
-        return new ResponseEntity<>(player.get(), HttpStatus.OK);
+        Player player = iPlayer.findById(id).get();
+        iPlayer.delete(player);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/search-player")
